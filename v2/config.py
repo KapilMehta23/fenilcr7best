@@ -1,4 +1,4 @@
-API_KEY = "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"
+API_KEY = ""
 IMAGE_PATH = "baseimage.png"
 
 IMAGE_MODEL = "llama-3.2-90b-vision-preview"
