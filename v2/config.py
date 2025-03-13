@@ -1,4 +1,4 @@
-API_KEY = "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"
+API_KEY = "yaha rakho"
 IMAGE_PATH = "baseimage.png"
 
 IMAGE_MODEL = "llama-3.2-90b-vision-preview"
