@@ -1,64 +1,83 @@
-API_KEY = ""
+API_KEY = "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"
 IMAGE_PATH = "baseimage.png"
 
 IMAGE_MODEL = "llama-3.2-90b-vision-preview"
-LAYOUT_MODEL = "llama-3.1-8b-instant"
+LAYOUT_MODEL = "llama-3.3-70b-versatile"
 
-LAYOUT_TEMPERATURE = 0.5
-LAYOUT_MAX_TOKENS = 4096
+LAYOUT_TEMPERATURE = 0.3
+LAYOUT_MAX_TOKENS = 32768
 LAYOUT_TOP_P = 1
 
-IMAGE_PROMOT = """You are an expert chip layout optimizer. Analyze this layout image with the goal of generating alternative arrangements.
-                Analyze the provided chip floorplan image and extract the following key details:
-                Core Measurements
-                Provide specific numerical values for:
+IMAGE_PROMPT = """You are an expert chip layout optimizer/Analyzer. Analyze this complex floorplan image meticulously.
 
-                Total chip dimensions (width * height)
-                Total chip area
-                Individual block measurements:
+Extract the following details with precision:
 
-                Width and height of each block
-                Area of each block
-                Exact coordinates/position of each block
-                Percentage of total chip area occupied by each block
+Core Measurements:
+- Total chip dimensions (width * height) in consistent units
+- Total chip area
+- Establish a coordinate system with (0,0) at the bottom-left corner
 
+For each block:
+- Block name/identifier exactly as labeled
+- Precise width and height measurements
+- Exact coordinates (x,y) of bottom-left corner
+- Block area and percentage of total chip area
+- Current aspect ratio (width:height)
+- Unique color code (HEX value) for visualization
 
-                Block Identification and Properties
-                For each block in the image:
+Block Relationships:
+- Generate a complete adjacency map listing all pairs of blocks that share an edge
+- Identify functional groups of blocks (like FSR_0-3 or HDIOL blocks)
+- Note any apparent connectivity requirements (blocks that appear to require proximity)
 
-                Block name/identifier
-                Exact dimensions
-                Location within the layout
-                Current aspect ratio
+Output all the details in an structured format 
+{
+  "chip_dimensions": {"width": X, "height": Y},
+  "total_area": Z,
+  "blocks": {
+    "block_name": {
+      "x": position_x,
+      "y": position_y,
+      "width": width,
+      "height": height,
+      "area": area,
+      "percentage": percentage,
+      "aspect_ratio": ratio,
+      "color": "#HEXCODE"
+    },
+    ...
+  },
+  "adjacency_map": [
+    ["block_A", "block_B"],
+    ...
+  ],
+  "functional_groups": {
+    "group_name": ["block_1", "block_2", ...],
+    ...
+  }
+}
 
-                Ensure that all blocks cover the whole area of the image 
-
-                Mention
-                Which blocks are adjacent to each other
-
-
-                Output Requirements
-                Present all measurements in:
-
-                Consistent units
-                Numerical format with appropriate precision
-                Percentages rounded to two decimal places
-                Coordinates relative to a clearly defined origin point
-
-
-                Output all this in strictly JSON format for easeness in the next step
-                Analyze it fully and follow the chain of thought prompting and get to the final output description."""
+Analyze every detail methodically and ensure complete coverage with no gaps in the analysis.
+"""
 
 
 Constraints = """See the Image will be of Consisting of individual blocks (chip floorplan), We can extract the total area and the 
  total area covered by all the individual blocks their dimensions and the total percentage that it covers of the whole Image  which is provided in the image description 
 There are some Constraints which will be while generating layouts :
-1 .The Area of all the individual blocks should remain conserved ,the aspect ratio can change however according to the arrangements 
-2. All the rearranged blocks should be fitted inside the whole chip layout and there should be no gaps/blank spaces within the generated layouts (blocks should be arranged that way)
-3. All the F blocks and their subdivisions should be connected to the E block , 
-therefore the area of the E block can be expanded if needed and the aspect ratio can be modified (also mentioned in the above constraint) ,  here keep in mind that it is not necessary that F blocks have to be connected sequentially or to each other they just need to be connected to have sharing one of the Edges with the E block(like network block) 
+**Hard Constraints (MUST FOLLOW):**
 
+
+1. Block Area Preservation: The area of each individual block must remain exactly the same as in the original layout.
+2.The area of the blocks should remain constant, the aspect ratio can change however according to the adjacent block arrangements.
+3. Complete Coverage: All blocks must fit precisely within the chip boundaries with no gaps or overlaps between any blocks.
+4. There should be NO OVERLAPS between the blocks in the generated layouts.
+5. Maintain the same and Consistent color coding throughout the generated layouts.
+6. Aspect Ratio Limits: When modifying block shapes, aspect ratios should not change by more than 2:1 from original.
+7. Physical Feasibility: Generated layouts must represent physically realizable chip designs.
+8.All the rearrangend blocks should be properly arranged and should be properly separated from each other.
+9 ALL the blocks should be fitted properly in the layout and should not be outside the layout.
 """
+
 Sample_code ="""   This is the sample  code format of a valid dictionary generated  output generated for model to learn and provide similar layouts with different arrangements  
 {  
     "E":
@@ -137,9 +156,28 @@ Sample_code ="""   This is the sample  code format of a valid dictionary generat
 
 """
 
-LAYOUT_PROMPT_TEMPLATE = """You are an expert chip layout optimizer.
-I will provide an image description containing block details.
-Using the following constraints and sample code, generate exactly 3 different layout dictionaries.
+LAYOUT_PROMPT_TEMPLATE = """You are an expert chip layout optimizer/Analyzer. Analyze this complex floorplan image meticulously.
+
+Extract the following details with precision:
+
+Core Measurements:
+- Total chip dimensions (width * height) in consistent units
+- Total chip area
+- Establish a coordinate system with (0,0) at the bottom-left corner
+
+For each block:
+- Block name/identifier exactly as labeled
+- Precise width and height measurements
+- Exact coordinates (x,y) of bottom-left corner
+- Block area and percentage of total chip area
+- Current aspect ratio (width:height)
+- Unique color code (HEX value) for visualization
+
+Block Relationships:
+- Generate a complete adjacency map listing all pairs of blocks that share an edge
+- Identify functional groups of blocks (like FSR_0-3 or HDIOL blocks)
+- Note any apparent connectivity requirements (blocks that appear to require proximity)
+
 **IMPORTANT:** Output only valid JSON in the following format:
 [
    {{ <layout dictionary 1> }},
@@ -147,13 +185,47 @@ Using the following constraints and sample code, generate exactly 3 different la
    {{ <layout dictionary 3> }}
 ]
 Do not include any markdown formatting, introductions, or commentary—output only the JSON.
+  
+Image Description:  
+{image_description}  
+  
+Constraints:  
+{Constraints}  
+  
+OUTPUT REQUIREMENTS:  
+Generate a valid JSON array containing 3 different layout dictionaries. Each dictionary must:  
+- Define position (x,y), dimensions (width,height), and color for every block  
+- Express positions and dimensions as mathematical expressions relative to total_width and total_height  
+- Ensure blocks precisely fill the available space  
+- Represent meaningfully different arrangements (not minor variations)  
+  
+Output all the details in a structured format 
+{{
+  "chip_dimensions": {{"width": X, "height": Y}},
+  "total_area": Z,
+  "blocks": {{
+    "block_name": {{
+      "x": position_x,
+      "y": position_y,
+      "width": width,
+      "height": height,
+      "area": area,
+      "percentage": percentage,
+      "aspect_ratio": ratio,
+      "color": "#HEXCODE"
+    }},
+    ...
+  }},
+  "adjacency_map": [
+    ["block_A", "block_B"],
+    ...
+  ],
+  "functional_groups": {{
+    "group_name": ["block_1", "block_2", ...],
+    ...
+  }}
+}}
 
-Image Description:
-{image_description}
+Analyze every detail methodically and ensure complete coverage with no gaps in the analysis.
+"""  
 
-Constraints:
-{Constraints}
-
-Sample Code:
-{Sample_code}
-"""
