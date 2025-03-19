@@ -1,12 +1,14 @@
-API_KEY = "yaha rakho"
-IMAGE_PATH = "Picture1.png"
+API_KEY = "GROQ API KEY HERE IF YOU WANT TO USE GROQ MODELS"
+IMAGE_PATH = "baseimage.png"
 
+API_URL = "https://llm-api.amd.com/openai/deployments/GPT-4-Turbo/chat/completions?api-version=default HTTP/1.1"
+AMD_API_KEY = "AMD API KEY HERE"
 
 IMAGE_MODEL = "llama-3.2-90b-vision-preview"
 LAYOUT_MODEL = "llama-3.3-70b-versatile"
-
+IMAGE_MAX_COMPLETION_TOKENS = 4096
 LAYOUT_TEMPERATURE = 0.3
-LAYOUT_MAX_TOKENS = 32768
+LAYOUT_MAX_TOKENS = 4096
 LAYOUT_TOP_P = 1
 
 IMAGE_PROMPT = """You are an expert chip layout optimizer/Analyzer. Analyze this complex floorplan image meticulously.
