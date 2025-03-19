@@ -1,5 +1,6 @@
 API_KEY = "yaha rakho"
-IMAGE_PATH = "baseimage.png"
+IMAGE_PATH = "Picture1.png"
+
 
 IMAGE_MODEL = "llama-3.2-90b-vision-preview"
 LAYOUT_MODEL = "llama-3.3-70b-versatile"
@@ -13,7 +14,7 @@ IMAGE_PROMPT = """You are an expert chip layout optimizer/Analyzer. Analyze this
 Extract the following details with precision:
 
 Core Measurements:
-- Total chip dimensions (width * height) in consistent units
+- The total height of the image is 9100 microns and the total width of the image is 5550 micronss
 - Total chip area
 - Establish a coordinate system with (0,0) at the bottom-left corner
 
@@ -161,7 +162,7 @@ LAYOUT_PROMPT_TEMPLATE = """You are an expert chip layout optimizer/Analyzer. An
 Extract the following details with precision:
 
 Core Measurements:
-- Total chip dimensions (width * height) in consistent units
+- The total height of the image is 9100 microns and the total width of the image is 5550 microns
 - Total chip area
 - Establish a coordinate system with (0,0) at the bottom-left corner
 
@@ -174,9 +175,8 @@ For each block:
 - Unique color code (HEX value) for visualization
 
 Block Relationships:
-- Generate a complete adjacency map listing all pairs of blocks that share an edge
-- Identify functional groups of blocks (like FSR_0-3 or HDIOL blocks)
-- Note any apparent connectivity requirements (blocks that appear to require proximity)
+- Generate a complete adjacency map listing all pairs of blocks that share an edge that helps in further layout generation reasoning.
+
 
 **IMPORTANT:** Output only valid JSON in the following format:
 [
@@ -188,10 +188,18 @@ Do not include any markdown formatting, introductions, or commentary—output on
   
 Image Description:  
 {image_description}  
-  
-Constraints:  
-{Constraints}  
-  
+These are some of the hard consraints that should be followed while generating the layouts:
+Constraints: (HARD FOLLOW) - ENSURE THAT ALL BLOCKS LABELLED IN THE IMAGE ARE PROPERLY IDENTIFIED.
+THE COLOR CODING SHOULD BE MAINTAINED AS IT IS IN THE IMAGE COMPULSORILY.
+BLOCK AREA PRESERVATION: THE AREA OF EACH INDIVIDUAL BLOCK MUST REMAIN EXACTLY THE SAME AS IN THE ORIGINAL LAYOUT.
+THE AREA OF THE BLOCKS SHOULD REMAIN CONSTANT, THE ASPECT RATIO CAN CHANGE HOWEVER ACCORDING TO THE ADJACENT BLOCK ARRANGEMENTS.
+COMPLETE COVERAGE: ALL BLOCKS MUST FIT PRECISELY WITHIN THE CHIP BOUNDARIES WITH NO GAPS OR OVERLAPS BETWEEN ANY BLOCKS.
+THERE SHOULD BE NO OVERLAPS BETWEEN THE BLOCKS IN THE GENERATED LAYOUTS.
+PHYSICAL FEASIBILITY: GENERATED LAYOUTS MUST REPRESENT PHYSICALLY REALIZABLE CHIP DESIGNS.
+ALL THE REARRANGED BLOCKS SHOULD BE PROPERLY ARRANGED AND SHOULD BE PROPERLY SEPARATED FROM EACH OTHER.
+ALL THE BLOCKS SHOULD BE FITTED PROPERLY IN THE LAYOUT AND SHOULD NOT BE OUTSIDE THE LAYOUT.
+
+    
 OUTPUT REQUIREMENTS:  
 Generate a valid JSON array containing 3 different layout dictionaries. Each dictionary must:  
 - Define position (x,y), dimensions (width,height), and color for every block  
@@ -217,15 +225,10 @@ Output all the details in a structured format
     ...
   }},
   "adjacency_map": [
-    ["block_A", "block_B"],
+    ["block_x", "block_y"],
     ...
   ],
-  "functional_groups": {{
-    "group_name": ["block_1", "block_2", ...],
-    ...
-  }}
 }}
 
 Analyze every detail methodically and ensure complete coverage with no gaps in the analysis.
 """  
-
